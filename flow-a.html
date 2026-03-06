@@ -862,6 +862,15 @@
                 console.log('脚本内容:', scriptContent);
                 console.log('图片数量:', selectedImages.length);
                 console.log('图片列表:', selectedImages);
+                
+                // 验证图片 URL
+                for (let i = 0; i < selectedImages.length; i++) {
+                    const imgUrl = selectedImages[i];
+                    console.log(`图片 ${i+1} URL:`, imgUrl);
+                    if (!imgUrl || typeof imgUrl !== 'string' || !imgUrl.startsWith('http')) {
+                        console.error(`图片 ${i+1} URL 格式不正确:`, imgUrl);
+                    }
+                }
 
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 10 * 60 * 1000);
