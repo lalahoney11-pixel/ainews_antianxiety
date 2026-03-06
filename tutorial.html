@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>使用教程 - AI 资讯短视频生成器</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            dark: '#0B0E14',
+                            card: '#161B22',
+                            accent: '#10B981',
+                            primary: '#3B82F6',
+                            border: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-morphism {
+            background: rgba(22, 27, 34, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .step-number {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #10B981 0%, #3B82F6 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        .screenshot {
+            background: #1f2937;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+        }
+        .screenshot-header {
+            background: #374151;
+            padding: 8px 12px;
+            display: flex;
+            gap: 6px;
+        }
+        .screenshot-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body class="bg-brand-dark text-gray-100 min-h-screen font-sans antialiased">
+    <!-- Header -->
+    <header class="border-b border-brand-border py-4 px-8 flex items-center justify-between sticky top-0 z-50 glass-morphism">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-gradient-to-r from-emerald-500 to-blue-500 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                    <path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                </svg>
+            </div>
+            <h1 class="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
+                AI 资讯短视频生成器 - 使用教程
+            </h1>
+        </div>
+        <nav class="flex items-center gap-6 text-sm font-medium text-gray-400">
+            <a class="hover:text-brand-accent transition-colors" href="flow-a.html">返回首页</a>
+        </nav>
+    </header>
+
+    <main class="max-w-4xl mx-auto p-8 pb-20">
+        <!-- 介绍 -->
+        <div class="mb-12">
+            <h2 class="text-3xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-blue-400">
+                📖 快速上手指南
+            </h2>
+            <p class="text-gray-400 text-lg leading-relaxed">
+                AI 资讯短视频生成器是一款智能化的视频创作工具，能够帮助您快速生成高质量的短视频内容。本教程将带您了解如何使用该工具。
+            </p>
+        </div>
+
+        <!-- 步骤1 -->
+        <div class="mb-12">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="step-number">1</div>
+                <h3 class="text-2xl font-bold text-white">选择创作方式</h3>
+            </div>
+            <div class="bg-brand-card rounded-xl p-6 border border-brand-border">
+                <p class="text-gray-300 mb-4">
+                    您可以选择两种创作方式：
+                </p>
+                <div class="grid md:grid-cols-2 gap-4 mb-6">
+                    <div class="bg-brand-dark/50 rounded-lg p-4 border border-brand-border">
+                        <h4 class="font-bold text-emerald-400 mb-2">🤖 AI 辅助生成（推荐）</h4>
+                        <p class="text-sm text-gray-400">输入新闻主题或关键词，AI 自动生成5个候选标题和口播文案，同时推荐相关配图。</p>
+                    </div>
+                    <div class="bg-brand-dark/50 rounded-lg p-4 border border-brand-border">
+                        <h4 class="font-bold text-blue-400 mb-2">✏️ 手动输入</h4>
+                        <p class="text-sm text-gray-400">自行填写标题、文案，上传自己的图片素材，完全自主控制内容。</p>
+                    </div>
+                </div>
+                
+                <!-- 截图 -->
+                <div class="screenshot">
+                    <div class="screenshot-header">
+                        <div class="screenshot-dot bg-red-500"></div>
+                        <div class="screenshot-dot bg-yellow-500"></div>
+                        <div class="screenshot-dot bg-green-500"></div>
+                    </div>
+                    <div class="p-4">
+                        <div class="bg-brand-card rounded-lg p-4 mb-3">
+                            <div class="text-xs text-gray-500 mb-2">AI 创意助手</div>
+                            <div class="bg-brand-dark/50 rounded p-3 text-sm text-gray-400 mb-3">
+                                输入话题/关键词...
+                            </div>
+                            <div class="bg-emerald-500 text-brand-dark rounded-lg py-2 text-center text-sm font-bold">
+                                立即生成内容
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 步骤2 -->
+        <div class="mb-12">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="step-number">2</div>
+                <h3 class="text-2xl font-bold text-white">编辑标题和文案</h3>
+            </div>
+            <div class="bg-brand-card rounded-xl p-6 border border-brand-border">
+                <p class="text-gray-300 mb-4">
+                    AI 会为您生成5个候选标题，您可以：
+                </p>
+                <ul class="list-disc list-inside text-gray-400 space-y-2 mb-6">
+                    <li>直接使用第一个标题（系统默认使用第一行）</li>
+                    <li>修改任意标题内容</li>
+                    <li>调整标题顺序（将想要的标题放在第一行）</li>
+                    <li>完全手动输入新的标题</li>
+                </ul>
+                <p class="text-gray-300 mb-4">
+                    口播文案同样支持自由编辑，右上角会实时显示字数统计。
+                </p>
+                
+                <!-- 截图 -->
+                <div class="screenshot">
+                    <div class="screenshot-header">
+                        <div class="screenshot-dot bg-red-500"></div>
+                        <div class="screenshot-dot bg-yellow-500"></div>
+                        <div class="screenshot-dot bg-green-500"></div>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex justify-between text-xs text-gray-500 mb-2">
+                            <span>视频标题（5个候选标题，一行一个）</span>
+                            <span class="text-emerald-400">86字</span>
+                        </div>
+                        <div class="bg-brand-dark/50 rounded-lg p-3 text-sm text-gray-300 mb-4 border border-brand-border" style="min-height: 100px;">
+                            <div>震惊！AI技术突破，未来已来</div>
+                            <div>人工智能新突破，改变生活方式</div>
+                            <div>科技前沿：AI发展新动向</div>
+                            <div>深度解析：AI如何影响未来</div>
+                            <div>AI革命：你不能错过的科技浪潮</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 步骤3 -->
+        <div class="mb-12">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="step-number">3</div>
+                <h3 class="text-2xl font-bold text-white">选择配图</h3>
+            </div>
+            <div class="bg-brand-card rounded-xl p-6 border border-brand-border">
+                <p class="text-gray-300 mb-4">
+                    配图是视频的重要组成部分，您可以：
+                </p>
+                <ul class="list-disc list-inside text-gray-400 space-y-2 mb-6">
+                    <li><strong class="text-emerald-400">上传自己的图片</strong>：点击上传区域，选择本地图片（支持 JPG、PNG，最大 5MB）</li>
+                    <li><strong class="text-blue-400">使用 AI 推荐图片</strong>：AI 生成内容时会自动推荐相关配图</li>
+                    <li><strong class="text-white">选择图片</strong>：点击图片进行选择，最多选择 10 张</li>
+                    <li><strong class="text-white">调整顺序</strong>：按照选择顺序排列，先选的图片会先显示</li>
+                </ul>
+                
+                <!-- 截图 -->
+                <div class="screenshot">
+                    <div class="screenshot-header">
+                        <div class="screenshot-dot bg-red-500"></div>
+                        <div class="screenshot-dot bg-yellow-500"></div>
+                        <div class="screenshot-dot bg-green-500"></div>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="text-sm text-gray-400">多媒体素材 (<span class="text-emerald-400">3</span>/10)</span>
+                            <div class="flex gap-2">
+                                <span class="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded">全选</span>
+                                <span class="text-xs bg-red-500/20 text-red-400 px-2 py-1 rounded">取消选择</span>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-4 gap-2">
+                            <div class="aspect-square bg-gray-700 rounded-lg border-2 border-emerald-500 relative">
+                                <div class="absolute top-1 right-1 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center text-xs">✓</div>
+                                <div class="absolute bottom-1 right-1 bg-emerald-500 text-xs px-1 rounded">1</div>
+                            </div>
+                            <div class="aspect-square bg-gray-700 rounded-lg border-2 border-emerald-500 relative">
+                                <div class="absolute top-1 right-1 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center text-xs">✓</div>
+                                <div class="absolute bottom-1 right-1 bg-emerald-500 text-xs px-1 rounded">2</div>
+                            </div>
+                            <div class="aspect-square bg-gray-700 rounded-lg border-2 border-emerald-500 relative">
+                                <div class="absolute top-1 right-1 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center text-xs">✓</div>
+                                <div class="absolute bottom-1 right-1 bg-emerald-500 text-xs px-1 rounded">3</div>
+                            </div>
+                            <div class="aspect-square bg-gray-700 rounded-lg border-2 border-transparent"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 步骤4 -->
+        <div class="mb-12">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="step-number">4</div>
+                <h3 class="text-2xl font-bold text-white">生成视频</h3>
+            </div>
+            <div class="bg-brand-card rounded-xl p-6 border border-brand-border">
+                <p class="text-gray-300 mb-4">
+                    准备好内容后，点击底部的"生成视频"按钮：
+                </p>
+                <ul class="list-disc list-inside text-gray-400 space-y-2 mb-6">
+                    <li>系统会自动合成口播文案、配图和背景视频</li>
+                    <li>生成过程大约需要 <strong class="text-yellow-400">3-5 分钟</strong></li>
+                    <li>生成期间按钮会置灰，请耐心等待</li>
+                    <li>生成完成后可以在右侧预览区观看视频</li>
+                </ul>
+                
+                <!-- 截图 -->
+                <div class="screenshot">
+                    <div class="screenshot-header">
+                        <div class="screenshot-dot bg-red-500"></div>
+                        <div class="screenshot-dot bg-yellow-500"></div>
+                        <div class="screenshot-dot bg-green-500"></div>
+                    </div>
+                    <div class="p-4">
+                        <div class="aspect-[9/16] max-w-[200px] mx-auto bg-black rounded-lg flex items-center justify-center">
+                            <div class="text-center">
+                                <div class="w-12 h-12 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin mx-auto mb-3"></div>
+                                <p class="text-gray-400 text-sm">正在生成视频...</p>
+                                <p class="text-gray-600 text-xs mt-1">大约需要 3-5 分钟</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 步骤5 -->
+        <div class="mb-12">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="step-number">5</div>
+                <h3 class="text-2xl font-bold text-white">下载视频</h3>
+            </div>
+            <div class="bg-brand-card rounded-xl p-6 border border-brand-border">
+                <p class="text-gray-300 mb-4">
+                    视频生成成功后：
+                </p>
+                <ul class="list-disc list-inside text-gray-400 space-y-2 mb-6">
+                    <li>在右侧预览区可以直接播放视频</li>
+                    <li>点击"下载视频文件"按钮保存到本地</li>
+                    <li>视频格式为 MP4，适合各大平台发布</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 常见问题 -->
+        <div class="mb-12">
+            <h2 class="text-2xl font-bold mb-6 text-white">❓ 常见问题</h2>
+            <div class="space-y-4">
+                <div class="bg-brand-card rounded-xl p-5 border border-brand-border">
+                    <h4 class="font-bold text-emerald-400 mb-2">Q: 上传的图片会保存在哪里？</h4>
+                    <p class="text-gray-400 text-sm">A: 图片会上传到阿里云 OSS 云存储，永久有效，可以随时使用。</p>
+                </div>
+                <div class="bg-brand-card rounded-xl p-5 border border-brand-border">
+                    <h4 class="font-bold text-emerald-400 mb-2">Q: 为什么有些图片显示"加载失败"？</h4>
+                    <p class="text-gray-400 text-sm">A: AI 推荐的图片链接可能已过期，建议上传自己的图片使用。</p>
+                </div>
+                <div class="bg-brand-card rounded-xl p-5 border border-brand-border">
+                    <h4 class="font-bold text-emerald-400 mb-2">Q: 视频生成失败怎么办？</h4>
+                    <p class="text-gray-400 text-sm">A: 请检查是否填写了标题和文案，并选择了至少1张图片。如果问题持续，请刷新页面重试。</p>
+                </div>
+                <div class="bg-brand-card rounded-xl p-5 border border-brand-border">
+                    <h4 class="font-bold text-emerald-400 mb-2">Q: 可以生成多长的视频？</h4>
+                    <p class="text-gray-400 text-sm">A: 视频长度取决于口播文案的字数，一般 100-300 字的文案可以生成 30秒-1分钟 的短视频。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 提示 -->
+        <div class="bg-gradient-to-r from-emerald-500/10 to-blue-500/10 rounded-xl p-6 border border-emerald-500/20">
+            <h3 class="font-bold text-emerald-400 mb-3">💡 小贴士</h3>
+            <ul class="text-gray-400 text-sm space-y-2">
+                <li>• 标题要吸引眼球，建议使用数字、疑问句或感叹句</li>
+                <li>• 口播文案要简洁有力，避免过长</li>
+                <li>• 配图要与内容相关，优先使用高质量图片</li>
+                <li>• 可以多次生成，选择最满意的结果</li>
+            </ul>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-brand-border py-6 px-8 text-center text-gray-500 text-sm">
+        <p>© 2024 AI 资讯短视频生成器 - 让创作更简单</p>
+    </footer>
+</body>
+</html>

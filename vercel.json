@@ -1,0 +1,12 @@
+{
+  "routes": [
+    {
+      "src": "/",
+      "dest": "/flow-a.html"
+    },
+    {
+      "src": "/tutorial",
+      "dest": "/tutorial.html"
+    }
+  ]
+}

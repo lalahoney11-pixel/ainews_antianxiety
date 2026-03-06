@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 资讯短视频 - 流程 B（直接生成）</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .section-card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .section-title {
+            color: #333;
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        label {
+            display: block;
+            font-size: 1em;
+            color: #555;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+
+        .images-input {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .image-url-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .image-url-row input {
+            flex: 1;
+        }
+
+        .image-url-row button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-add {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-add:hover {
+            background: #5568d3;
+        }
+
+        .btn-remove {
+            background: #ff4757;
+            color: white;
+        }
+
+        .btn-remove:hover {
+            background: #ff3344;
+        }
+
+        .generate-section {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .generate-btn {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            border: none;
+            padding: 18px 60px;
+            font-size: 1.3em;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(17, 153, 142, 0.4);
+        }
+
+        .generate-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .generating {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            margin-top: 20px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .spinner {
+            border: 4px solid rgba(102, 126, 234, 0.3);
+            border-top-color: #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .generating p {
+            color: #667eea;
+            font-size: 1.1em;
+        }
+
+        .generating .hint {
+            font-size: 0.9em;
+            color: #999;
+            margin-top: 10px;
+        }
+
+        .video-result {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-top: 20px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .video-result h3 {
+            color: #333;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+        }
+
+        .video-player {
+            width: 100%;
+            max-width: 450px;
+            margin: 0 auto 25px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #000;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+
+        .video-player video {
+            width: 100%;
+            display: block;
+        }
+
+        .download-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 40px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 1.1em;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .error-message {
+            background: #ff4757;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .error-message.active {
+            display: block;
+        }
+
+        .image-preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .preview-item {
+            position: relative;
+            aspect-ratio: 1;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid #e0e0e0;
+        }
+
+        .preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .preview-item .index {
+            position: absolute;
+            bottom: 4px;
+            right: 4px;
+            background: rgba(102, 126, 234, 0.9);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .hint-text {
+            font-size: 0.85em;
+            color: #999;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎬 AI 资讯短视频 - 直接生成</h1>
+
+        <!-- 标题输入 -->
+        <div class="section-card">
+            <h2 class="section-title">📝 视频标题</h2>
+            <input type="text" id="titleInput" placeholder="输入视频标题，例如：Claude 登顶美区 App Store，AI 应用格局生变">
+        </div>
+
+        <!-- 口播文案输入 -->
+        <div class="section-card">
+            <h2 class="section-title">🎙️ 口播文案</h2>
+            <textarea id="scriptInput" placeholder="输入口播文案..."></textarea>
+            <div class="hint-text">AI 配音将根据此文案生成</div>
+        </div>
+
+        <!-- 图片 URL 输入 -->
+        <div class="section-card">
+            <h2 class="section-title">🖼️ 图片 URL（1-10 张）</h2>
+            <div class="images-input" id="imagesInput">
+                <div class="image-url-row">
+                    <input type="text" class="image-url" placeholder="图片 URL（必须是有效的 http/https 链接）">
+                </div>
+            </div>
+            <button class="btn-add" onclick="addImageUrl()" style="margin-top: 10px; padding: 8px 16px;">+ 添加图片</button>
+            <div class="hint-text">至少需要 1 张图片，最多 10 张</div>
+
+            <!-- 图片预览 -->
+            <div class="image-preview" id="imagePreview"></div>
+        </div>
+
+        <!-- 生成按钮 -->
+        <div class="generate-section">
+            <button class="generate-btn" onclick="generateVideo()">
+                <span>🎬</span> 生成视频
+            </button>
+            <div class="error-message" id="errorMessage"></div>
+        </div>
+
+        <!-- 生成中 -->
+        <div class="generating" id="generating" style="display: none;">
+            <div class="spinner"></div>
+            <p>正在生成视频...</p>
+            <div class="hint">正在合成口播文案、图片和背景视频，大约需要 1-2 分钟</div>
+        </div>
+
+        <!-- 生成结果 -->
+        <div class="video-result" id="videoResult" style="display: none;">
+            <h3>✅ 视频生成成功！</h3>
+            <div class="video-player">
+                <video id="videoPlayer" controls></video>
+            </div>
+            <a class="download-btn" id="downloadBtn" href="#" download="video.mp4">⬇️ 下载视频</a>
+        </div>
+    </div>
+
+    <script>
+        // API 配置
+        const FLOW_B_CONFIG = {
+            url: 'https://api.coze.cn/v1/workflow/stream_run',
+            token: 'sat_yCBeixssXXc1ayuxYn5v826Ho28VSL7jD3XGmUlzxCJepF58iHGVNPxKI43cf3mP',
+            workflow_id: '7612552233687613480',
+            app_id: '7611848851917996051',
+            bg_video: 'https://p26-bot-workflow-sign.byteimg.com/tos-cn-i-mdko3gqilj/0d8a4117c0e7442598f5c119412f9278.mov~tplv-mdko3gqilj-image.image?rk3s=81d4c505&x-expires=1803561030&x-signature=180dqAaFNKndnqclF3VUMnG9Vro%3D'
+        };
+
+        // 添加图片 URL 输入框
+        function addImageUrl() {
+            const container = document.getElementById('imagesInput');
+            const rows = container.querySelectorAll('.image-url-row');
+
+            if (rows.length >= 10) {
+                alert('最多只能添加 10 张图片');
+                return;
+            }
+
+            const row = document.createElement('div');
+            row.className = 'image-url-row';
+            row.innerHTML = `
+                <input type="text" class="image-url" placeholder="图片 URL">
+                <button class="btn-remove" onclick="removeImageUrl(this)">删除</button>
+            `;
+            container.appendChild(row);
+        }
+
+        // 删除图片 URL 输入框
+        function removeImageUrl(btn) {
+            const container = document.getElementById('imagesInput');
+            const rows = container.querySelectorAll('.image-url-row');
+
+            if (rows.length <= 1) {
+                alert('至少需要保留一个图片输入框');
+                return;
+            }
+
+            btn.parentElement.remove();
+        }
+
+        // 获取所有图片 URL
+        function getImageUrls() {
+            const inputs = document.querySelectorAll('.image-url');
+            const urls = [];
+            inputs.forEach(input => {
+                const url = input.value.trim();
+                if (url && url.startsWith('http')) {
+                    urls.push(url);
+                }
+            });
+            return urls;
+        }
+
+        // 更新图片预览
+        function updatePreview() {
+            const urls = getImageUrls();
+            const preview = document.getElementById('imagePreview');
+
+            if (urls.length === 0) {
+                preview.innerHTML = '';
+                return;
+            }
+
+            preview.innerHTML = urls.map((url, index) => `
+                <div class="preview-item">
+                    <img src="${url}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>🖼️</text></svg>'">
+                    <div class="index">${index + 1}</div>
+                </div>
+            `).join('');
+        }
+
+        // 监听输入变化
+        document.addEventListener('input', function(e) {
+            if (e.target.classList.contains('image-url')) {
+                updatePreview();
+            }
+        });
+
+        // 生成视频
+        async function generateVideo() {
+            const title = document.getElementById('titleInput').value.trim();
+            const script = document.getElementById('scriptInput').value.trim();
+            const images = getImageUrls();
+
+            // 验证输入
+            if (!title) {
+                showError('请输入视频标题');
+                return;
+            }
+            if (!script) {
+                showError('请输入口播文案');
+                return;
+            }
+            if (images.length === 0) {
+                showError('请至少输入 1 个图片 URL');
+                return;
+            }
+            if (images.length > 10) {
+                showError('最多只能使用 10 张图片');
+                return;
+            }
+
+            // 隐藏错误，显示生成中
+            hideError();
+            document.getElementById('generating').style.display = 'block';
+            document.getElementById('videoResult').style.display = 'none';
+            document.querySelector('.generate-btn').disabled = true;
+
+            try {
+                const flowBInput = {
+                    bg_video: FLOW_B_CONFIG.bg_video,
+                    title: title,
+                    content: script,
+                    img: images
+                };
+
+                console.log('Flow B input:', flowBInput);
+
+                const response = await fetch(FLOW_B_CONFIG.url, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${FLOW_B_CONFIG.token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        workflow_id: FLOW_B_CONFIG.workflow_id,
+                        app_id: FLOW_B_CONFIG.app_id,
+                        parameters: flowBInput
+                    })
+                });
+
+                console.log('Response status:', response.status);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText || response.statusText}`);
+                }
+
+                // 解析 SSE 流式响应
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let videoUrl = null;
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    const chunk = decoder.decode(value, { stream: true });
+                    console.log('SSE chunk:', chunk);
+
+                    const lines = chunk.split('\n');
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            const dataStr = line.slice(6);
+                            try {
+                                const data = JSON.parse(dataStr);
+                                if (data.content) {
+                                    try {
+                                        const contentData = JSON.parse(data.content);
+                                        if (contentData.output && contentData.output.startsWith('http')) {
+                                            videoUrl = contentData.output;
+                                            console.log('✅ Found video URL:', videoUrl);
+                                        }
+                                    } catch (e) {}
+                                }
+                            } catch (e) {}
+                        }
+                    }
+                }
+
+                if (!videoUrl) {
+                    throw new Error('未找到视频 URL，请检查输入参数是否正确');
+                }
+
+                // 显示结果
+                document.getElementById('generating').style.display = 'none';
+                document.getElementById('videoResult').style.display = 'block';
+
+                const videoPlayer = document.getElementById('videoPlayer');
+                videoPlayer.src = videoUrl;
+
+                const downloadBtn = document.getElementById('downloadBtn');
+                downloadBtn.href = videoUrl;
+
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('generating').style.display = 'none';
+                showError('生成失败：' + error.message);
+            } finally {
+                document.querySelector('.generate-btn').disabled = false;
+            }
+        }
+
+        function showError(message) {
+            const el = document.getElementById('errorMessage');
+            el.textContent = message;
+            el.classList.add('active');
+        }
+
+        function hideError() {
+            document.getElementById('errorMessage').classList.remove('active');
+        }
+    </script>
+</body>
+</html>

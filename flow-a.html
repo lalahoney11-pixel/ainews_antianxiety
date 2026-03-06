@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>AI 资讯短视频生成器 - Premium AI Video Tool</title>
+    <!-- 网站图标 -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%2310B981'/><path d='M35 30 L35 70 L50 55 L65 70 L65 30 L50 45 Z' fill='white'/><circle cx='70' cy='30' r='8' fill='%23FF4444'/></svg>">
+    <!-- 配置文件（包含敏感信息，不提交到 GitHub） -->
+    <script src="config.js"></script>
+    <!-- CryptoJS for OSS signature -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <!-- Tailwind CSS v3 with plugins -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            dark: '#0B0E14',
+                            card: '#161B22',
+                            accent: '#10B981',
+                            primary: '#3B82F6',
+                            border: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    },
+                    backgroundImage: {
+                        'glass-gradient': 'linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%)',
+                        'neon-glow': 'linear-gradient(90deg, #10B981 0%, #3B82F6 100%)'
+                    }
+                }
+            }
+        }
+    </script>
+    <style data-purpose="custom-animations">
+        @keyframes pulse-subtle {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        .animate-pulse-subtle {
+            animation: pulse-subtle 3s ease-in-out infinite;
+        }
+        .glass-morphism {
+            background: rgba(22, 27, 34, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        textarea:focus, input:focus {
+            outline: none !important;
+            border-color: #10B981 !important;
+            box-shadow: 0 0 0 1px #10B981 !important;
+        }
+        .images-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            grid-auto-flow: row;
+            direction: ltr;
+            gap: 12px;
+        }
+        .image-item {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.3s;
+            aspect-ratio: 1;
+        }
+        .image-item:hover {
+            transform: scale(1.05);
+        }
+        .image-item.selected {
+            border-color: #10B981;
+        }
+        .image-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .image-item .checkbox {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: transparent;
+            transition: all 0.3s;
+        }
+        .image-item.selected .checkbox {
+            background: #10B981;
+            color: white;
+        }
+        .image-item .count-badge {
+            position: absolute;
+            bottom: 6px;
+            right: 6px;
+            background: #10B981;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7em;
+            font-weight: bold;
+        }
+        .image-item .delete-btn {
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            width: 20px;
+            height: 20px;
+            background: #ef4444;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: white;
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 10;
+        }
+        .image-item:hover .delete-btn {
+            opacity: 1;
+        }
+        .video-player {
+            width: 100%;
+            max-width: 320px;
+            margin: 0 auto;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #000;
+        }
+        .video-player video {
+            width: 100%;
+            display: block;
+        }
+        .error-message {
+            background: #ef4444;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-top: 16px;
+            display: none;
+        }
+        .error-message.active {
+            display: block;
+        }
+        .loading-spinner {
+            border: 3px solid rgba(16, 185, 129, 0.3);
+            border-top-color: #10B981;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        /* 移动端优化 */
+        @media (max-width: 640px) {
+            header {
+                padding: 12px 16px;
+            }
+            header nav {
+                gap: 16px;
+            }
+            header nav a {
+                font-size: 0.75rem;
+            }
+            main {
+                padding: 16px;
+                gap: 16px;
+            }
+            .images-container {
+                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+                gap: 8px;
+            }
+            .image-item .delete-btn {
+                opacity: 1;
+                width: 16px;
+                height: 16px;
+                font-size: 10px;
+            }
+            .image-item .checkbox {
+                width: 16px;
+                height: 16px;
+                font-size: 10px;
+            }
+            .image-modal img {
+                max-width: 95%;
+                max-height: 70%;
+            }
+            .image-modal .close-btn {
+                top: 10px;
+                right: 10px;
+                width: 36px;
+                height: 36px;
+            }
+        }
+        /* 图片预览模态框 */
+        .image-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: zoom-out;
+        }
+        .image-modal.active {
+            display: flex;
+        }
+        .image-modal img {
+            max-width: 80%;
+            max-height: 80%;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+        }
+        .image-modal .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .image-modal .close-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+        .image-modal .nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .image-modal .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .image-modal .prev-btn {
+            left: 20px;
+        }
+        .image-modal .next-btn {
+            right: 20px;
+        }
+        .image-modal .image-counter {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.6);
+            padding: 8px 16px;
+            border-radius: 20px;
+            color: white;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body class="bg-brand-dark text-gray-100 min-h-screen font-sans antialiased">
+    <!-- BEGIN: MainHeader -->
+    <header class="border-b border-brand-border py-3 sm:py-4 px-3 sm:px-8 sticky top-0 z-50 glass-morphism">
+        <div class="flex items-center justify-between">
+            <!-- Logo and Title -->
+            <div class="flex items-center gap-2 sm:gap-3 min-w-0 flex-shrink-0">
+                <div class="w-7 h-7 sm:w-10 sm:h-10 bg-neon-glow rounded-lg sm:rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20 flex-shrink-0">
+                    <svg class="h-4 w-4 sm:h-6 sm:w-6 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                    </svg>
+                </div>
+                <h1 class="text-sm sm:text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 truncate">
+                    <span class="hidden sm:inline">AI 资讯短视频生成器</span>
+                    <span class="sm:hidden">AI视频生成</span>
+                </h1>
+            </div>
+            <!-- Navigation -->
+            <nav class="flex items-center gap-3 sm:gap-6 text-xs sm:text-sm font-medium text-gray-400 flex-shrink-0 ml-2">
+                <a class="hover:text-brand-accent transition-colors whitespace-nowrap" href="#">项目广场</a>
+                <a class="hover:text-brand-accent transition-colors whitespace-nowrap" href="tutorial.html">使用教程</a>
+                <div class="h-6 w-6 sm:h-8 sm:w-8 rounded-full bg-gray-800 border border-brand-border cursor-pointer hover:border-brand-accent transition-all flex-shrink-0"></div>
+            </nav>
+        </div>
+    </header>
+    <!-- END: MainHeader -->
+
+    <main class="max-w-[1440px] mx-auto p-4 sm:p-8 grid grid-cols-12 gap-4 sm:gap-8 pb-32">
+        <!-- BEGIN: LeftColumn -->
+        <section class="col-span-12 lg:col-span-7 space-y-4 sm:space-y-8" data-purpose="configuration-area">
+            <!-- AI Assistant Card - 放在最上面 -->
+            <div class="p-[1px] rounded-xl bg-gradient-to-r from-emerald-500/30 to-blue-500/30 shadow-2xl shadow-emerald-500/5" data-purpose="ai-assistant-card">
+                <div class="bg-brand-card rounded-xl p-4 sm:p-6 relative overflow-hidden">
+                    <div class="absolute -top-10 -right-10 w-32 h-32 bg-emerald-500/10 blur-3xl rounded-full"></div>
+                    <div class="relative z-10">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-emerald-400 flex items-center gap-2">
+                                <svg class="h-5 w-5" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                    <path clip-rule="evenodd" d="M11.3 1.047a1 1 0 01.897.95l1.418 15.93a1 1 0 01-1.99.176l-1.418-15.93a1 1 0 011.085-1.126zM5.13 4.728a1 1 0 011.409-.096l10.999 9.468a1 1 0 01-1.312 1.513L5.226 6.137a1 1 0 01-.096-1.41z" fill-rule="evenodd"></path>
+                                </svg>
+                                AI 创意助手
+                            </h3>
+                            <span class="text-[10px] text-emerald-400/60 font-bold uppercase tracking-widest">Beta</span>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="space-y-1">
+                                <label class="text-[10px] text-gray-500 uppercase font-bold tracking-widest">请输入具体的新闻事件（必填）</label>
+                                <input id="topicInput" type="text" class="w-full bg-brand-dark/50 border-brand-border rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-brand-accent transition-all placeholder:text-gray-600 border border-white/10" placeholder="例如：小米汽车正式发布，售价21.59万起"/>
+                            </div>
+                            <p class="text-xs text-gray-500">💡 好的输入：具体事件描述&nbsp;&nbsp;避免输入：宽泛题材方向</p>
+                            <button id="generateContentBtn" onclick="generateContent()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-brand-dark py-2.5 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100">
+                                <span>立即生成内容</span>
+                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                                </svg>
+                            </button>
+                            <!-- Loading -->
+                            <div id="loading" class="hidden text-center py-4">
+                                <div class="loading-spinner mx-auto mb-2"></div>
+                                <p class="text-xs text-gray-400">正在生成内容...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Video Content Section -->
+            <div class="space-y-4" data-purpose="video-content-inputs">
+                <h2 class="text-sm font-semibold uppercase tracking-widest text-gray-500 mb-4">视频内容设定</h2>
+                
+                <!-- 标题输入 - 5个标题 -->
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <label class="text-xs text-gray-400 ml-1">视频标题</label>
+                        <span id="titleCount" class="text-xs text-gray-500">0字</span>
+                    </div>
+                    <textarea id="titleInput" class="w-full bg-brand-card border-brand-border rounded-lg px-4 py-3 text-sm focus:ring-1 focus:ring-brand-accent transition-all placeholder:text-gray-600 resize-none border border-white/10" placeholder="请输入视频标题" rows="5" oninput="updateCharCount('titleInput', 'titleCount')"></textarea>
+                    <p class="text-xs text-gray-500">💡 若使用AI创意助手，AI会自动提供5个标题供您选择，您可以手动修改成1个标题。</p>
+                </div>
+                
+                <!-- 口播文案 -->
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <label class="text-xs text-gray-400 ml-1">视频脚本</label>
+                        <span id="scriptCount" class="text-xs text-gray-500">0字</span>
+                    </div>
+                    <textarea id="scriptContent" class="w-full bg-brand-card border-brand-border rounded-lg px-4 py-3 text-sm focus:ring-1 focus:ring-brand-accent transition-all placeholder:text-gray-600 resize-none border border-white/10" placeholder="请输入视频口播文案" rows="6" oninput="updateCharCount('scriptContent', 'scriptCount')"></textarea>
+                </div>
+            </div>
+
+            <!-- Asset Selection Section -->
+            <div class="space-y-4" data-purpose="asset-upload">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-sm font-semibold uppercase tracking-widest text-gray-500">用于拼装视频的图片 (<span id="selectedCount">0</span>/10)</h2>
+                    <div class="flex gap-2">
+                        <button id="clearSelectionBtn" onclick="clearSelection()" class="px-3 py-1.5 text-xs bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">全部取消</button>
+                    </div>
+                </div>
+                
+                <!-- 上传区域 -->
+                <div class="border-2 border-dashed border-brand-border rounded-xl p-8 text-center hover:border-brand-accent transition-colors group cursor-pointer" onclick="document.getElementById('imageUpload').click()">
+                    <div class="flex flex-col items-center">
+                        <div class="w-12 h-12 mb-3 rounded-full bg-gray-800 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <svg class="h-6 w-6 text-gray-400 group-hover:text-brand-accent" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                            </svg>
+                        </div>
+                        <p class="text-sm text-gray-400">点击或拖拽图片到此处上传</p>
+                        <p class="text-xs text-gray-600 mt-2">支持 JPG, PNG (最大 2MB)</p>
+                    </div>
+                    <input type="file" id="imageUpload" accept="image/jpeg,image/png,image/jpg" multiple onchange="handleImageUpload(event)" class="hidden">
+                </div>
+                
+                <!-- 图片容器 -->
+                <div class="images-container" id="imagesContainer"></div>
+            </div>
+        </section>
+        <!-- END: LeftColumn -->
+
+        <!-- BEGIN: RightColumn -->
+        <aside class="col-span-12 lg:col-span-5 space-y-4 sm:space-y-6 lg:sticky lg:top-24" data-purpose="preview-area">
+            <!-- Preview Card -->
+            <div class="glass-morphism rounded-2xl p-4 sm:p-6 border border-brand-border">
+                <h2 class="text-sm font-semibold uppercase tracking-widest text-gray-500 mb-6">视频生成结果预览</h2>
+                
+                <!-- Video Player Mockup -->
+                <div id="videoSection" class="hidden">
+                    <!-- 生成中 -->
+                    <div id="videoGenerating" class="hidden aspect-[9/16] max-w-[320px] mx-auto bg-black rounded-xl border border-brand-border shadow-2xl relative flex items-center justify-center overflow-hidden">
+                        <div class="text-center p-6 z-10">
+                            <div class="w-16 h-16 mx-auto mb-4 border-2 border-brand-accent/30 border-t-brand-accent rounded-full animate-spin"></div>
+                            <p class="text-gray-400 text-sm font-medium animate-pulse-subtle">正在生成视频...</p>
+                            <p class="text-gray-600 text-xs mt-2">大约需要 3-5 分钟</p>
+                        </div>
+                        <div class="absolute inset-0 bg-gradient-to-b from-transparent to-brand-dark opacity-60"></div>
+                    </div>
+                    
+                    <!-- 生成结果 -->
+                    <div id="videoResult" class="hidden">
+                        <div class="video-player mb-4">
+                            <video id="videoPlayer" controls class="rounded-lg"></video>
+                        </div>
+                        <a id="downloadBtn" href="#" download="video.mp4" class="w-full py-3 bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white rounded-xl border border-brand-border text-sm font-bold transition-all flex items-center justify-center gap-2 group">
+                            <svg class="h-4 w-4 group-hover:translate-y-1 transition-transform" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                            </svg>
+                            下载视频文件
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- 默认状态 -->
+                <div id="videoPlaceholder" class="aspect-[9/16] max-w-[320px] mx-auto bg-black rounded-xl border border-brand-border shadow-2xl relative flex items-center justify-center overflow-hidden">
+                    <div class="text-center p-6 z-10">
+                        <div class="w-16 h-16 mx-auto mb-4 border-2 border-brand-accent/30 border-t-brand-accent rounded-full"></div>
+                        <p class="text-gray-400 text-sm font-medium animate-pulse-subtle">等待生成内容...</p>
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-b from-transparent to-brand-dark opacity-60"></div>
+                </div>
+            </div>
+        </aside>
+        <!-- END: RightColumn -->
+    </main>
+
+    <!-- Error Message -->
+    <div id="errorMessage" class="error-message max-w-[1440px] mx-auto mx-8"></div>
+
+    <!-- BEGIN: BottomAction -->
+    <footer class="fixed bottom-0 left-0 right-0 p-8 pointer-events-none flex justify-center z-50">
+        <div class="pointer-events-auto">
+            <button id="generateVideoBtn" onclick="generateVideo()" class="px-12 py-5 bg-brand-primary hover:bg-blue-600 text-white rounded-full font-bold text-lg shadow-2xl shadow-blue-500/40 transition-all hover:scale-105 active:scale-95 flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                    <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                </svg>
+                生成视频
+            </button>
+        </div>
+    </footer>
+    <!-- END: BottomAction -->
+
+    <!-- 图片预览模态框 -->
+    <div id="imageModal" class="image-modal" onclick="closeImageModal(event)">
+        <div class="close-btn" onclick="closeImageModal(event)">×</div>
+        <div class="nav-btn prev-btn" onclick="event.stopPropagation(); showPrevImage()">‹</div>
+        <img id="modalImage" src="" alt="Preview" onclick="event.stopPropagation()">
+        <div class="nav-btn next-btn" onclick="event.stopPropagation(); showNextImage()">›</div>
+        <div class="image-counter"><span id="currentIndex">1</span> / <span id="totalCount">1</span></div>
+    </div>
+
+    <script>
+        // API 配置 - 流程 A
+        const API_CONFIG = {
+            url: 'https://api.coze.cn/v1/workflow/stream_run',
+            token: 'pat_DUF2mFgYwQrpCyNtalfvBSyI2pU8zpPXLUq7Zh3KB8fQ1hLOlzYDDSMdDStuHftW',
+            workflow_id: '7613581958056853531',
+            app_id: '7613462747614953522'
+        };
+
+        // API 配置 - 流程 B（视频生成）
+        const FLOW_B_CONFIG = {
+            url: 'https://api.coze.cn/v1/workflow/stream_run',
+            token: 'pat_DUF2mFgYwQrpCyNtalfvBSyI2pU8zpPXLUq7Zh3KB8fQ1hLOlzYDDSMdDStuHftW',
+            workflow_id: '7613581958056869915',
+            app_id: '7613462747614953522'
+        };
+
+        // 阿里云 OSS 配置
+        const OSS_CONFIG = {
+            accessKeyId: window.OSS_ACCESS_KEY_ID || 'YOUR_ACCESS_KEY_ID',
+            accessKeySecret: window.OSS_ACCESS_KEY_SECRET || 'YOUR_ACCESS_KEY_SECRET',
+            bucket: window.OSS_BUCKET || 'YOUR_BUCKET_NAME',
+            region: window.OSS_REGION || 'YOUR_REGION',
+            endpoint: window.OSS_ENDPOINT || 'YOUR_ENDPOINT',
+            host: window.OSS_HOST || 'YOUR_HOST'
+        };
+
+        // 全局状态
+        let state = {
+            titles: [],
+            script: '',
+            images: [],
+            uploadedImages: [],
+            selectedImages: new Set(),
+            selectedTitle: 0
+        };
+
+        // AI生成内容（流程A）
+        async function generateContent() {
+            const topicInput = document.getElementById('topicInput');
+            const topic = topicInput.value.trim();
+
+            if (!topic) {
+                showError('请输入 AI 新闻主题');
+                return;
+            }
+
+            const loading = document.getElementById('loading');
+            const generateContentBtn = document.getElementById('generateContentBtn');
+            const generateVideoBtn = document.getElementById('generateVideoBtn');
+            
+            loading.classList.remove('hidden');
+            generateContentBtn.disabled = true;
+            generateVideoBtn.disabled = true;
+            hideError();
+
+            try {
+                const response = await fetch(API_CONFIG.url, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${API_CONFIG.token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        workflow_id: API_CONFIG.workflow_id,
+                        app_id: API_CONFIG.app_id,
+                        parameters: { input: topic }
+                    })
+                });
+
+                // 流式响应处理
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let resultData = null;
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    const chunk = decoder.decode(value, { stream: true });
+                    const lines = chunk.split('\n');
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            const dataStr = line.slice(6);
+                            try {
+                                const data = JSON.parse(dataStr);
+                                if (data.content) {
+                                    resultData = JSON.parse(data.content);
+                                }
+                            } catch (e) {}
+                        }
+                    }
+                }
+
+                if (!resultData) {
+                    throw new Error('未获取到有效数据');
+                }
+
+                fillGeneratedContent(resultData);
+            } catch (error) {
+                console.error('Error:', error);
+                showError('生成失败：' + error.message);
+            } finally {
+                loading.classList.add('hidden');
+                generateContentBtn.disabled = false;
+                generateVideoBtn.disabled = false;
+            }
+        }
+
+        // 填充生成的内容
+        function fillGeneratedContent(data) {
+            const content = data.data || data;
+            state.titles = [content.title1, content.title2, content.title3, content.title4, content.title5];
+            state.script = content.content;
+            state.images = [];
+            state.selectedTitle = 0;
+
+            const titlesText = state.titles.filter(t => t).join('\n');
+            document.getElementById('titleInput').value = titlesText;
+            document.getElementById('scriptContent').value = state.script;
+            updateCharCount('titleInput', 'titleCount');
+            updateCharCount('scriptContent', 'scriptCount');
+            renderImages();
+            alert('✅ AI内容生成成功！已自动填充标题和文案，请上传图片后生成视频。');
+        }
+
+        // 渲染图片
+        function renderImages() {
+            const container = document.getElementById('imagesContainer');
+            const allImages = [...state.uploadedImages.map(img => img.url), ...state.images];
+            
+            container.innerHTML = allImages.map((imageUrl, index) => {
+                const isSelected = state.selectedImages.has(index);
+                const isUploaded = index < state.uploadedImages.length;
+                return `
+                    <div class="image-item ${isSelected ? 'selected' : ''}" onclick="toggleImage(${index})" ondblclick="event.stopPropagation(); openImageModal(${index})">
+                        <img src="${imageUrl}" alt="Image ${index + 1}" onerror="handleImageError(this, '${imageUrl}')">
+                        ${isUploaded ? `<div class="delete-btn" onclick="event.stopPropagation(); deleteUploadedImage(${index})">×</div>` : ''}
+                        <div class="checkbox">${isSelected ? '✓' : ''}</div>
+                        ${isSelected ? `<div class="count-badge">${getSelectionOrder(index)}</div>` : ''}
+                    </div>
+                `;
+            }).join('');
+
+            updateSelectedCount();
+        }
+
+        function getSelectionOrder(index) {
+            const selectedArray = Array.from(state.selectedImages);
+            return selectedArray.indexOf(index) + 1;
+        }
+
+        function toggleImage(index) {
+            if (state.selectedImages.has(index)) {
+                state.selectedImages.delete(index);
+            } else {
+                if (state.selectedImages.size >= 10) {
+                    alert('最多只能选择 10 张图片');
+                    return;
+                }
+                state.selectedImages.add(index);
+            }
+            renderImages();
+        }
+
+        function selectAll() {
+            const allImages = [...state.uploadedImages.map(img => img.url), ...state.images];
+            if (allImages.length <= 10) {
+                state.selectedImages = new Set(Array.from({length: allImages.length}, (_, i) => i));
+            } else {
+                alert('图片超过 10 张，请手动选择');
+            }
+            renderImages();
+        }
+
+        function clearSelection() {
+            state.selectedImages.clear();
+            renderImages();
+        }
+
+        function handleImageError(img, imageUrl) {
+            console.error('图片加载失败:', imageUrl);
+            img.style.display = 'none';
+            const placeholder = document.createElement('div');
+            placeholder.style.cssText = 'width:100%;height:100%;background:#1f2937;display:flex;align-items:center;justify-content:center;color:#6b7280;font-size:12px;';
+            placeholder.textContent = '加载失败';
+            img.parentNode.appendChild(placeholder);
+        }
+
+        async function handleImageUpload(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
+
+            const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+
+            for (const file of files) {
+                if (!validTypes.includes(file.type)) {
+                    alert(`文件 ${file.name} 不是有效的图片格式（支持 JPG、PNG）`);
+                    continue;
+                }
+                if (file.size > 2 * 1024 * 1024) {
+                    alert(`文件 ${file.name} 大小超过 2MB 限制`);
+                    continue;
+                }
+
+                try {
+                    let imageUrl;
+                    // 优先使用 Vercel API 上传（更安全，密钥存储在环境变量中）
+                    imageUrl = await uploadToVercelApi(file);
+                    state.uploadedImages.push({ url: imageUrl, name: file.name });
+                } catch (error) {
+                    alert(`文件 ${file.name} 上传失败：${error.message}`);
+                }
+            }
+
+            renderImages();
+            event.target.value = '';
+        }
+
+        // 使用 Cloudinary 免费图床（无需 API Key，使用 unsigned upload）
+        async function uploadToCloudinary(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', 'ml_default'); // 使用预设
+            
+            // 使用免费的 Cloudinary cloud
+            const cloudName = 'demo';
+            const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`上传失败: ${errorText.substring(0, 100)}`);
+            }
+
+            const data = await response.json();
+            return data.secure_url;
+        }
+
+        // 使用 Vercel API 上传（解决跨域问题）
+        async function uploadToVercelApi(file) {
+            // 将文件转为 base64
+            const base64 = await new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.readAsDataURL(file);
+            });
+
+            // 调用 Vercel API
+            const response = await fetch('/api/upload', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ file: base64 })
+            });
+
+            if (!response.ok) {
+                const error = await response.text();
+                throw new Error('上传失败: ' + error);
+            }
+
+            const data = await response.json();
+            return data.url;
+        }
+
+        async function uploadToOSS(file, objectKey) {
+            console.log('开始上传到 OSS:', {
+                host: OSS_CONFIG.host,
+                objectKey: objectKey,
+                fileName: file.name,
+                fileSize: file.size
+            });
+
+            const policy = {
+                expiration: new Date(Date.now() + 3600000).toISOString(),
+                conditions: [
+                    ['content-length-range', 0, 5 * 1024 * 1024],
+                    ['eq', '$key', objectKey],
+                    ['eq', '$bucket', OSS_CONFIG.bucket],
+                    ['eq', '$x-oss-object-acl', 'public-read']
+                ]
+            };
+
+            const policyBase64 = btoa(JSON.stringify(policy));
+            const signature = CryptoJS.HmacSHA1(policyBase64, OSS_CONFIG.accessKeySecret).toString(CryptoJS.enc.Base64);
+
+            const formData = new FormData();
+            formData.append('key', objectKey);
+            formData.append('OSSAccessKeyId', OSS_CONFIG.accessKeyId);
+            formData.append('policy', policyBase64);
+            formData.append('Signature', signature);
+            formData.append('success_action_status', '200');
+            formData.append('x-oss-object-acl', 'public-read');
+            formData.append('file', file);
+
+            console.log('发送请求到:', OSS_CONFIG.host);
+
+            try {
+                const response = await fetch(OSS_CONFIG.host, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                console.log('OSS 响应状态:', response.status);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('OSS 错误响应:', errorText);
+                    throw new Error(`OSS 上传失败：${response.status} ${errorText}`);
+                }
+
+                const url = `${OSS_CONFIG.host}/${objectKey}`;
+                console.log('上传成功，URL:', url);
+                return url;
+            } catch (error) {
+                console.error('上传过程错误:', error);
+                throw error;
+            }
+        }
+
+        function deleteUploadedImage(index) {
+            if (index >= 0 && index < state.uploadedImages.length) {
+                state.uploadedImages.splice(index, 1);
+                recalculateSelection();
+                renderImages();
+            }
+        }
+
+        function recalculateSelection() {
+            const allImagesLength = state.uploadedImages.length + state.images.length;
+            const newSelection = new Set();
+            for (const index of state.selectedImages) {
+                if (index < allImagesLength) newSelection.add(index);
+            }
+            state.selectedImages = newSelection;
+        }
+
+        function updateSelectedCount() {
+            document.getElementById('selectedCount').textContent = state.selectedImages.size;
+        }
+
+        async function generateVideo() {
+            const titlesText = document.getElementById('titleInput').value.trim();
+            const scriptContent = document.getElementById('scriptContent').value.trim();
+            const title = titlesText.split('\n')[0].trim();
+
+            if (!title) {
+                showError('请输入视频标题（至少第一行）');
+                return;
+            }
+            if (!scriptContent) {
+                showError('请输入口播文案');
+                return;
+            }
+            if (state.selectedImages.size === 0) {
+                showError('请先选择至少 1 张图片再生成视频');
+                return;
+            }
+
+            const allImages = [...state.uploadedImages.map(img => img.url), ...state.images];
+            const selectedImages = Array.from(state.selectedImages).sort((a, b) => a - b).map(i => allImages[i]);
+
+            const videoSection = document.getElementById('videoSection');
+            const videoGenerating = document.getElementById('videoGenerating');
+            const videoResult = document.getElementById('videoResult');
+            const videoPlaceholder = document.getElementById('videoPlaceholder');
+            const generateContentBtn = document.getElementById('generateContentBtn');
+            const generateVideoBtn = document.getElementById('generateVideoBtn');
+
+            videoSection.classList.remove('hidden');
+            videoPlaceholder.classList.add('hidden');
+            videoGenerating.classList.remove('hidden');
+            videoResult.classList.add('hidden');
+            generateContentBtn.disabled = true;
+            generateVideoBtn.disabled = true;
+            document.getElementById('clearSelectionBtn').disabled = true;
+            hideError();
+
+            try {
+                console.log('开始生成视频...');
+                console.log('标题:', title);
+                console.log('脚本内容:', scriptContent);
+                console.log('图片数量:', selectedImages.length);
+                console.log('图片列表:', selectedImages);
+
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10 * 60 * 1000);
+
+                console.log('发送请求到:', FLOW_B_CONFIG.url);
+
+                const response = await fetch(FLOW_B_CONFIG.url, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${FLOW_B_CONFIG.token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        workflow_id: FLOW_B_CONFIG.workflow_id,
+                        app_id: FLOW_B_CONFIG.app_id,
+                        parameters: {
+                            title: title,
+                            content: scriptContent,
+                            img: selectedImages
+                        }
+                    }),
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+
+                console.log('响应状态:', response.status);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('错误响应:', errorText);
+                    throw new Error(`HTTP ${response.status}: ${errorText || response.statusText}`);
+                }
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let videoUrl = null;
+                let rawContent = null;
+
+                console.log('开始读取流式响应...');
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    const chunk = decoder.decode(value, { stream: true });
+                    console.log('收到数据块:', chunk.substring(0, 200));
+                    
+                    const lines = chunk.split('\n');
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            const dataStr = line.slice(6);
+                            try {
+                                const data = JSON.parse(dataStr);
+                                console.log('解析数据:', data);
+                                if (data.content) {
+                                    const contentData = JSON.parse(data.content);
+                                    console.log('内容数据:', contentData);
+                                    if (contentData.output) {
+                                        rawContent = contentData.output;
+                                        if (contentData.output.startsWith('http')) {
+                                            videoUrl = contentData.output;
+                                            console.log('找到视频 URL:', videoUrl);
+                                        }
+                                    }
+                                }
+                            } catch (e) {
+                                console.log('解析 JSON 失败:', e);
+                            }
+                        }
+                    }
+                }
+
+                console.log('最终视频 URL:', videoUrl);
+                console.log('原始内容:', rawContent);
+
+                if (!videoUrl) {
+                    throw new Error('未找到视频 URL，请检查输入参数是否正确。原始输出：' + (rawContent || '无'));
+                }
+
+                videoGenerating.classList.add('hidden');
+                videoResult.classList.remove('hidden');
+                document.getElementById('videoPlayer').src = videoUrl;
+                document.getElementById('downloadBtn').href = videoUrl;
+
+            } catch (error) {
+                console.error('视频生成错误:', error);
+                videoGenerating.classList.add('hidden');
+                videoPlaceholder.classList.remove('hidden');
+                showError('视频生成失败：' + error.message);
+            } finally {
+                generateContentBtn.disabled = false;
+                generateVideoBtn.disabled = false;
+                document.getElementById('clearSelectionBtn').disabled = false;
+            }
+        }
+
+        function showError(message) {
+            const errorEl = document.getElementById('errorMessage');
+            errorEl.textContent = message;
+            errorEl.classList.add('active');
+        }
+
+        function hideError() {
+            document.getElementById('errorMessage').classList.remove('active');
+        }
+
+        // 更新字数统计
+        function updateCharCount(inputId, countId) {
+            const input = document.getElementById(inputId);
+            const count = document.getElementById(countId);
+            const text = input.value;
+            count.textContent = text.length + '字';
+        }
+
+        // 图片预览相关
+        let currentImageIndex = 0;
+        let allImagesList = [];
+
+        function openImageModal(index) {
+            allImagesList = [...state.uploadedImages.map(img => img.url), ...state.images];
+            if (allImagesList.length === 0) return;
+            
+            currentImageIndex = index;
+            updateModalImage();
+            document.getElementById('imageModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeImageModal(event) {
+            if (event && event.target.tagName === 'IMG') return;
+            document.getElementById('imageModal').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function updateModalImage() {
+            const modal = document.getElementById('imageModal');
+            const img = document.getElementById('modalImage');
+            img.src = allImagesList[currentImageIndex];
+            document.getElementById('currentIndex').textContent = currentImageIndex + 1;
+            document.getElementById('totalCount').textContent = allImagesList.length;
+        }
+
+        function showPrevImage() {
+            if (allImagesList.length === 0) return;
+            currentImageIndex = (currentImageIndex - 1 + allImagesList.length) % allImagesList.length;
+            updateModalImage();
+        }
+
+        function showNextImage() {
+            if (allImagesList.length === 0) return;
+            currentImageIndex = (currentImageIndex + 1) % allImagesList.length;
+            updateModalImage();
+        }
+
+        // 键盘事件
+        document.addEventListener('keydown', function(e) {
+            const modal = document.getElementById('imageModal');
+            if (!modal.classList.contains('active')) return;
+            
+            if (e.key === 'Escape') {
+                closeImageModal({target: modal});
+            } else if (e.key === 'ArrowLeft') {
+                showPrevImage();
+            } else if (e.key === 'ArrowRight') {
+                showNextImage();
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            renderImages();
+            updateCharCount('titleInput', 'titleCount');
+            updateCharCount('scriptContent', 'scriptCount');
+        });
+    </script>
+</body>
+</html>
