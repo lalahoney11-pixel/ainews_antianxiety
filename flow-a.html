@@ -888,8 +888,8 @@
                         app_id: FLOW_B_CONFIG.app_id,
                         parameters: {
                             title: title,
-                            content: scriptContent,
-                            img: selectedImages
+                            script: scriptContent,
+                            images: selectedImages
                         }
                     }),
                     signal: controller.signal
@@ -926,6 +926,14 @@
                             try {
                                 const data = JSON.parse(dataStr);
                                 console.log('解析数据:', data);
+                                
+                                // 处理错误事件
+                                if (data.event === 'Error' && data.data) {
+                                    const errorData = data.data;
+                                    console.error('Coze API 错误:', errorData);
+                                    throw new Error(`Coze API 错误: ${errorData.error_message || '未知错误'}`);
+                                }
+                                
                                 if (data.content) {
                                     const contentData = JSON.parse(data.content);
                                     console.log('内容数据:', contentData);
