@@ -873,7 +873,8 @@
                 }
 
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 10 * 60 * 1000);
+                // 增加超时时间到 15 分钟，支持长文本处理
+                const timeoutId = setTimeout(() => controller.abort(), 15 * 60 * 1000);
 
                 console.log('发送请求到:', FLOW_B_CONFIG.url);
 
@@ -928,40 +929,55 @@
                     if (done) break;
 
                     const chunk = decoder.decode(value, { stream: true });
-                    console.log('收到数据块:', chunk.substring(0, 200));
+                    console.log('收到数据块:', chunk.substring(0, 500));
                     
                     const lines = chunk.split('\n');
                     for (const line of lines) {
-                        if (line.startsWith('data: ')) {
-                            const dataStr = line.slice(6);
+                        const trimmedLine = line.trim();
+                        if (!trimmedLine || trimmedLine.startsWith('id:') || trimmedLine.startsWith('event:')) continue;
+                        
+                        if (trimmedLine.startsWith('data: ')) {
+                            const dataStr = trimmedLine.slice(6);
+                            console.log('原始数据:', dataStr.substring(0, 500));
+                            
                             try {
                                 const data = JSON.parse(dataStr);
                                 console.log('解析数据:', data);
                                 
-                                // 处理错误事件
-                                if (data.event === 'Error' && data.data) {
-                                    const errorData = data.data;
-                                    console.error('Coze API 错误:', errorData);
-                                    throw new Error(`Coze API 错误: ${errorData.error_message || '未知错误'}`);
+                                if (data.error_message or (data.data and data.data.error_message)):
+                                    const errorMsg = data.error_message or data.data.error_message;
+                                    console.error('API 错误:', data);
+                                    throw new Error(`Coze API 错误：${errorMsg}`);
                                 }
                                 
-                                if (data.content) {
-                                    const contentData = JSON.parse(data.content);
-                                    console.log('内容数据:', contentData);
-                                    if (contentData.output) {
-                                        rawContent = contentData.output;
-                                        if (contentData.output.startsWith('http')) {
-                                            videoUrl = contentData.output;
-                                            console.log('找到视频 URL:', videoUrl);
-                                        }
-                                    }
+                                if (data.data and typeof data.data.output === 'string' and data.data.output.startsWith('http')):
+                                    videoUrl = data.data.output;
+                                    rawContent = videoUrl;
+                                    console.log('找到视频 URL:', videoUrl);
+                                    break;
                                 }
-                            } catch (e) {
+                                
+                                if (data.content and not videoUrl):
+                                    try:
+                                        const contentData = JSON.parse(data.content);
+                                        console.log('内容数据:', contentData);
+                                        if (contentData.output and typeof contentData.output === 'string' and contentData.output.startsWith('http')):
+                                            videoUrl = contentData.output;
+                                            rawContent = videoUrl;
+                                            console.log('找到视频 URL:', videoUrl);
+                                            break;
+                                        }
+                                    } catch (e) {}
+                                }
+                            } catch (e):
+                                if (e.message.includes('Coze API 错误')) throw e;
                                 console.log('解析 JSON 失败:', e);
                             }
                         }
                     }
+                    if (videoUrl) break;
                 }
+
 
                 console.log('最终视频 URL:', videoUrl);
                 console.log('原始内容:', rawContent);
