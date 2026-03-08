@@ -944,24 +944,24 @@
                                 const data = JSON.parse(dataStr);
                                 console.log('解析数据:', data);
                                 
-                                if (data.error_message or (data.data and data.data.error_message)):
-                                    const errorMsg = data.error_message or data.data.error_message;
+                                if (data.error_message || (data.data && data.data.error_message)) {
+                                    const errorMsg = data.error_message || data.data.error_message;
                                     console.error('API 错误:', data);
                                     throw new Error(`Coze API 错误：${errorMsg}`);
                                 }
                                 
-                                if (data.data and typeof data.data.output === 'string' and data.data.output.startsWith('http')):
+                                if (data.data && typeof data.data.output === 'string' && data.data.output.startsWith('http')) {
                                     videoUrl = data.data.output;
                                     rawContent = videoUrl;
                                     console.log('找到视频 URL:', videoUrl);
                                     break;
                                 }
                                 
-                                if (data.content and not videoUrl):
+                                if (data.content && !videoUrl) {
                                     try:
                                         const contentData = JSON.parse(data.content);
                                         console.log('内容数据:', contentData);
-                                        if (contentData.output and typeof contentData.output === 'string' and contentData.output.startsWith('http')):
+                                        if (contentData.output && typeof contentData.output === 'string' && contentData.output.startsWith('http')) {
                                             videoUrl = contentData.output;
                                             rawContent = videoUrl;
                                             console.log('找到视频 URL:', videoUrl);
@@ -969,7 +969,7 @@
                                         }
                                     } catch (e) {}
                                 }
-                            } catch (e):
+                            } catch (e) {
                                 if (e.message.includes('Coze API 错误')) throw e;
                                 console.log('解析 JSON 失败:', e);
                             }
