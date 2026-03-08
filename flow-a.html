@@ -958,7 +958,7 @@
                                 }
                                 
                                 if (data.content && !videoUrl) {
-                                    try:
+                                    try {
                                         const contentData = JSON.parse(data.content);
                                         console.log('内容数据:', contentData);
                                         if (contentData.output && typeof contentData.output === 'string' && contentData.output.startsWith('http')) {
