@@ -877,6 +877,17 @@
 
                 console.log('发送请求到:', FLOW_B_CONFIG.url);
 
+                console.log('发送请求到:', FLOW_B_CONFIG.url);
+                console.log('请求参数:', JSON.stringify({
+                    workflow_id: FLOW_B_CONFIG.workflow_id,
+                    app_id: FLOW_B_CONFIG.app_id,
+                    parameters: {
+                        title: title,
+                        content: scriptContent,
+                        img: selectedImages
+                    }
+                }, null, 2));
+
                 const response = await fetch(FLOW_B_CONFIG.url, {
                     method: 'POST',
                     headers: {
