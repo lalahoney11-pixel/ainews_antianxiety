@@ -859,9 +859,21 @@
             try {
                 console.log('开始生成视频...');
                 console.log('标题:', title);
+                console.log('脚本内容长度:', scriptContent ? scriptContent.length : 0);
                 console.log('脚本内容:', scriptContent);
                 console.log('图片数量:', selectedImages.length);
                 console.log('图片列表:', selectedImages);
+                
+                // 验证必要参数
+                if (!title || !title.trim()) {
+                    throw new Error('标题不能为空');
+                }
+                if (!scriptContent || !scriptContent.trim()) {
+                    throw new Error('脚本内容不能为空');
+                }
+                if (!selectedImages || selectedImages.length === 0) {
+                    throw new Error('请至少上传一张图片');
+                }
                 
                 // 验证图片 URL
                 for (let i = 0; i < selectedImages.length; i++) {
@@ -869,6 +881,7 @@
                     console.log(`图片 ${i+1} URL:`, imgUrl);
                     if (!imgUrl || typeof imgUrl !== 'string' || !imgUrl.startsWith('http')) {
                         console.error(`图片 ${i+1} URL 格式不正确:`, imgUrl);
+                        throw new Error(`图片 ${i+1} URL 格式不正确：${imgUrl}`);
                     }
                 }
 
@@ -876,18 +889,19 @@
                 // 增加超时时间到 15 分钟，支持长文本处理
                 const timeoutId = setTimeout(() => controller.abort(), 15 * 60 * 1000);
 
-                console.log('发送请求到:', FLOW_B_CONFIG.url);
-
-                console.log('发送请求到:', FLOW_B_CONFIG.url);
-                console.log('请求参数:', JSON.stringify({
+                // 构建请求体
+                const requestBody = {
                     workflow_id: FLOW_B_CONFIG.workflow_id,
                     app_id: FLOW_B_CONFIG.app_id,
                     parameters: {
-                        title: title,
-                        content: scriptContent,
+                        title: title.trim(),
+                        content: scriptContent.trim(),
                         img: selectedImages
                     }
-                }, null, 2));
+                };
+
+                console.log('发送请求到:', FLOW_B_CONFIG.url);
+                console.log('请求参数:', JSON.stringify(requestBody, null, 2));
 
                 const response = await fetch(FLOW_B_CONFIG.url, {
                     method: 'POST',
@@ -895,15 +909,7 @@
                         'Authorization': `Bearer ${FLOW_B_CONFIG.token}`,
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({
-                        workflow_id: FLOW_B_CONFIG.workflow_id,
-                        app_id: FLOW_B_CONFIG.app_id,
-                        parameters: {
-                            title: title,
-                            content: scriptContent,
-                            img: selectedImages
-                        }
-                    }),
+                    body: JSON.stringify(requestBody),
                     signal: controller.signal
                 });
 
