@@ -889,14 +889,14 @@
                 // 增加超时时间到 15 分钟，支持长文本处理
                 const timeoutId = setTimeout(() => controller.abort(), 15 * 60 * 1000);
 
-                // 构建请求体
+                // 构建请求体（参数顺序与 curl 命令一致）
                 const requestBody = {
                     workflow_id: FLOW_B_CONFIG.workflow_id,
                     app_id: FLOW_B_CONFIG.app_id,
                     parameters: {
-                        title: title.trim(),
                         content: scriptContent.trim(),
-                        img: selectedImages
+                        img: selectedImages,
+                        title: title.trim()
                     }
                 };
 
