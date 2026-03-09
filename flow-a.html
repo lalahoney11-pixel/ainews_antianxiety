@@ -890,15 +890,12 @@
                 const timeoutId = setTimeout(() => controller.abort(), 15 * 60 * 1000);
 
                 // 构建请求体（参数顺序与 curl 命令一致）
-                // Coze 的 Array<Image> 类型需要对象格式：{url: string}
-                const imageArray = selectedImages.map(url => ({ url: url }));
-                
                 const requestBody = {
                     workflow_id: FLOW_B_CONFIG.workflow_id,
                     app_id: FLOW_B_CONFIG.app_id,
                     parameters: {
                         content: scriptContent.trim(),
-                        img: imageArray,
+                        img: selectedImages,  // 字符串数组格式
                         title: title.trim()
                     }
                 };
@@ -923,7 +920,7 @@
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${FLOW_B_CONFIG.token}`,
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json; charset=utf-8'
                     },
                     body: JSON.stringify(requestBody),
                     signal: controller.signal
