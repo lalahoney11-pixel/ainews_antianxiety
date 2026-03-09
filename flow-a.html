@@ -902,6 +902,12 @@
 
                 console.log('发送请求到:', FLOW_B_CONFIG.url);
                 console.log('请求参数:', JSON.stringify(requestBody, null, 2));
+                
+                // 验证 parameters 中的值
+                console.log('Parameters 验证:');
+                console.log('  - title:', requestBody.parameters.title, '(长度:', requestBody.parameters.title ? requestBody.parameters.title.length : 0, ')');
+                console.log('  - content:', requestBody.parameters.content, '(长度:', requestBody.parameters.content ? requestBody.parameters.content.length : 0, ')');
+                console.log('  - img:', requestBody.parameters.img, '(数量:', requestBody.parameters.img ? requestBody.parameters.img.length : 0, ')');
 
                 const response = await fetch(FLOW_B_CONFIG.url, {
                     method: 'POST',
