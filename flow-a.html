@@ -895,7 +895,7 @@
                     app_id: FLOW_B_CONFIG.app_id,
                     parameters: {
                         content: scriptContent.trim(),
-                        img: selectedImages,
+                        img: selectedImages, // 保持数组格式
                         title: title.trim()
                     }
                 };
@@ -908,6 +908,13 @@
                 console.log('  - title:', requestBody.parameters.title, '(长度:', requestBody.parameters.title ? requestBody.parameters.title.length : 0, ')');
                 console.log('  - content:', requestBody.parameters.content, '(长度:', requestBody.parameters.content ? requestBody.parameters.content.length : 0, ')');
                 console.log('  - img:', requestBody.parameters.img, '(数量:', requestBody.parameters.img ? requestBody.parameters.img.length : 0, ')');
+                
+                // 验证图片 URL 格式
+                console.log('图片 URL 验证:');
+                for (let i = 0; i < selectedImages.length; i++) {
+                    const url = selectedImages[i];
+                    console.log(`  图片 ${i+1}:`, url, '- 类型:', typeof url, '- 是否字符串:', typeof url === 'string');
+                }
 
                 const response = await fetch(FLOW_B_CONFIG.url, {
                     method: 'POST',
