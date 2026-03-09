@@ -900,8 +900,10 @@
                     }
                 };
 
+                const requestBodyString = JSON.stringify(requestBody);
                 console.log('发送请求到:', FLOW_B_CONFIG.url);
-                console.log('请求参数:', JSON.stringify(requestBody, null, 2));
+                console.log('请求体字符串:', requestBodyString);
+                console.log('请求体长度:', requestBodyString.length);
                 
                 // 验证 parameters 中的值
                 console.log('Parameters 验证:');
@@ -913,7 +915,10 @@
                 console.log('图片 URL 验证:');
                 for (let i = 0; i < selectedImages.length; i++) {
                     const url = selectedImages[i];
-                    console.log(`  图片 ${i+1}:`, url, '- 类型:', typeof url, '- 是否字符串:', typeof url === 'string');
+                    console.log(`  图片 ${i+1} URL:`, url);
+                    console.log(`  图片 ${i+1} 长度:`, url.length);
+                    console.log(`  图片 ${i+1} 首字符:`, url.charCodeAt(0));
+                    console.log(`  图片 ${i+1} 尾字符:`, url.charCodeAt(url.length - 1));
                 }
 
                 const response = await fetch(FLOW_B_CONFIG.url, {
