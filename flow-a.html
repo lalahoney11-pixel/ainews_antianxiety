@@ -904,6 +904,8 @@
                 console.log('发送请求到:', FLOW_B_CONFIG.url);
                 console.log('请求体字符串:', requestBodyString);
                 console.log('请求体长度:', requestBodyString.length);
+                console.log('Authorization 头:', `Bearer ${FLOW_B_CONFIG.token.substring(0, 20)}...`);
+                console.log('Token 长度:', FLOW_B_CONFIG.token.length);
                 
                 // 验证 parameters 中的值
                 console.log('Parameters 验证:');
