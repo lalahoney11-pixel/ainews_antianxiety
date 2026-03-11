@@ -492,15 +492,26 @@
             app_id: '7613462747614953522'
         };
 
-        // 阿里云 OSS 配置
-        const OSS_CONFIG = {
-            accessKeyId: 'LTAI5tP1rM8yKzFRxsm21ZJi',
-            accessKeySecret: '6xFOqGj9BcGdk6GmQp0NgMTHaHy1aV',
-            bucket: 'oss-pai-jthp4harhlmya8j0ax-cn-shanghai',
-            region: 'oss-cn-shanghai',
-            endpoint: 'oss-cn-shanghai.aliyuncs.com',
-            host: 'https://oss-pai-jthp4harhlmya8j0ax-cn-shanghai.oss-cn-shanghai.aliyuncs.com'
-        };
+        // 阿里云 OSS 配置 - 从 Vercel API 动态获取
+        let OSS_CONFIG = null;
+
+        // 从 Vercel API 获取 OSS 配置
+        async function getOSSConfig() {
+            if (OSS_CONFIG) return OSS_CONFIG; // 缓存配置
+
+            try {
+                const response = await fetch('/api/get-oss-config');
+                if (!response.ok) {
+                    throw new Error(`获取 OSS 配置失败：${response.status}`);
+                }
+                OSS_CONFIG = await response.json();
+                console.log('OSS 配置已加载:', { ...OSS_CONFIG, accessKeySecret: '***' });
+                return OSS_CONFIG;
+            } catch (error) {
+                console.error('获取 OSS 配置失败:', error);
+                throw error;
+            }
+        }
 
         // 全局状态
         let state = {
@@ -750,8 +761,11 @@ async function handleImageUpload(event) {
         }
 
         async function uploadToOSS(file, objectKey) {
+            // 先获取 OSS 配置
+            const config = await getOSSConfig();
+
             console.log('开始上传到 OSS:', {
-                host: OSS_CONFIG.host,
+                host: config.host,
                 objectKey: objectKey,
                 fileName: file.name,
                 fileSize: file.size
@@ -762,27 +776,27 @@ async function handleImageUpload(event) {
                 conditions: [
                     ['content-length-range', 0, 5 * 1024 * 1024],
                     ['eq', '$key', objectKey],
-                    ['eq', '$bucket', OSS_CONFIG.bucket],
+                    ['eq', '$bucket', config.bucket],
                     ['eq', '$x-oss-object-acl', 'public-read']
                 ]
             };
 
             const policyBase64 = btoa(JSON.stringify(policy));
-            const signature = CryptoJS.HmacSHA1(policyBase64, OSS_CONFIG.accessKeySecret).toString(CryptoJS.enc.Base64);
+            const signature = CryptoJS.HmacSHA1(policyBase64, config.accessKeySecret).toString(CryptoJS.enc.Base64);
 
             const formData = new FormData();
             formData.append('key', objectKey);
-            formData.append('OSSAccessKeyId', OSS_CONFIG.accessKeyId);
+            formData.append('OSSAccessKeyId', config.accessKeyId);
             formData.append('policy', policyBase64);
             formData.append('Signature', signature);
             formData.append('success_action_status', '200');
             formData.append('x-oss-object-acl', 'public-read');
             formData.append('file', file);
 
-            console.log('发送请求到:', OSS_CONFIG.host);
+            console.log('发送请求到:', config.host);
 
             try {
-                const response = await fetch(OSS_CONFIG.host, {
+                const response = await fetch(config.host, {
                     method: 'POST',
                     body: formData
                 });
@@ -795,7 +809,7 @@ async function handleImageUpload(event) {
                     throw new Error(`OSS 上传失败：${response.status} ${errorText}`);
                 }
 
-                const url = `${OSS_CONFIG.host}/${objectKey}`;
+                const url = `${config.host}/${objectKey}`;
                 console.log('上传成功，URL:', url);
                 return url;
             } catch (error) {
