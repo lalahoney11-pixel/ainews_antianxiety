@@ -682,8 +682,11 @@ async function handleImageUpload(event) {
 
                 try {
                     let imageUrl;
-                    // 🚨 切换为 Cloudinary 免费图床，解决本地跑不通 Vercel API 导致的空 URL 问题
-                    imageUrl = await uploadToCloudinary(file);
+                    // ✅ 使用阿里云 OSS 上传（Vercel 已配置 OSS 环境变量）
+                    const timestamp = Date.now();
+                    const randomStr = Math.random().toString(36).substring(2, 8);
+                    const objectKey = `uploads/${timestamp}_${randomStr}_${file.name}`;
+                    imageUrl = await uploadToOSS(file, objectKey);
                     
                     if (!imageUrl) throw new Error("获取到的图片URL为空");
                     
