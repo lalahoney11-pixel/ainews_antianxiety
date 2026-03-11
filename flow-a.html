@@ -479,7 +479,7 @@
         // API 配置 - 流程 A
         const API_CONFIG = {
             url: 'https://api.coze.cn/v1/workflow/stream_run',
-            token: 'cztei_qowdhPUfYV2IXI9DaXIsggSlHc0KwXy4LqAUfiadIOoGiPq9OGEkxXM8IaPEoFg7',
+            token: 'cztei_huDgjfLdlOL6lvIuQhdYZQz6OuiFjCFQRI15UWycX887lcBKfXnQDLvd3ttEwKLEa',
             workflow_id: '7613581958056853531',
             app_id: '7613462747614953522'
         };
@@ -487,7 +487,7 @@
         // API 配置 - 流程 B（视频生成）
         const FLOW_B_CONFIG = {
             url: 'https://api.coze.cn/v1/workflow/stream_run',
-            token: 'cztei_qowdhPUfYV2IXI9DaXIsggSlHc0KwXy4LqAUfiadIOoGiPq9OGEkxXM8IaPEoFg7',
+            token: 'cztei_huDgjfLdlOL6lvIuQhdYZQz6OuiFjCFQRI15UWycX887lcBKfXnQDLvd3ttEwKLEa',
             workflow_id: '7613581958056869915',
             app_id: '7613462747614953522'
         };
@@ -664,7 +664,7 @@
             img.parentNode.appendChild(placeholder);
         }
 
-        async function handleImageUpload(event) {
+async function handleImageUpload(event) {
             const files = event.target.files;
             if (!files || files.length === 0) return;
 
@@ -682,8 +682,11 @@
 
                 try {
                     let imageUrl;
-                    // 优先使用 Vercel API 上传（更安全，密钥存储在环境变量中）
-                    imageUrl = await uploadToVercelApi(file);
+                    // 🚨 切换为 Cloudinary 免费图床，解决本地跑不通 Vercel API 导致的空 URL 问题
+                    imageUrl = await uploadToCloudinary(file);
+                    
+                    if (!imageUrl) throw new Error("获取到的图片URL为空");
+                    
                     state.uploadedImages.push({ url: imageUrl, name: file.name });
                 } catch (error) {
                     alert(`文件 ${file.name} 上传失败：${error.message}`);
@@ -837,9 +840,22 @@
                 return;
             }
 
+// 1. 获取所有图片并严格过滤出真实的、以 http 开头的 URL
             const allImages = [...state.uploadedImages.map(img => img.url), ...state.images];
-            const selectedImages = Array.from(state.selectedImages).sort((a, b) => a - b).map(i => allImages[i]);
-
+            const selectedImages = Array.from(state.selectedImages)
+                .sort((a, b) => a - b)
+                .map(i => allImages[i])
+                // 核心过滤：剔除所有 undefined、null 或非正常链接
+                .filter(url => url && typeof url === 'string' && url.startsWith('http'));
+// 2. 拦截空值，防止发给 Coze 报错
+if (selectedImages.length === 0) {
+    showError('❌ 错误：你选中的图片没有有效的网络地址(URL)。请检查图片是否真正上传成功！');
+    videoGenerating.classList.add('hidden');
+    videoPlaceholder.classList.remove('hidden');
+    generateContentBtn.disabled = false;
+    generateVideoBtn.disabled = false;
+    return; // 直接终止，不发请求
+}
             const videoSection = document.getElementById('videoSection');
             const videoGenerating = document.getElementById('videoGenerating');
             const videoResult = document.getElementById('videoResult');
